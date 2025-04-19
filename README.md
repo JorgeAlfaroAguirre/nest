@@ -28,6 +28,17 @@ check Installation:
 
 `nest new project-name`
 
+### Project file structure
+
+```
+src
+├── app.controller.spec.ts
+├── app.controller.ts
+├── app.module.ts
+├── app.service.ts
+└── main.ts
+```
+
 ## Explanation of each file in a new Nest project
 
 ## Core Nest building blocks
