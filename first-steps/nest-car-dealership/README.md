@@ -2,72 +2,221 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Car Dealership
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+`main.ts`
 
-## Description
+```ts
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+import { AppModule } from './app.module';
 
-## Installation
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
 
-```bash
-$ npm install
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  await app.listen(3000);
+}
+bootstrap();
 ```
 
-## Running the app
+`app.module.ts`
 
-```bash
-# development
-$ npm run start
+```ts
+import { Module } from '@nestjs/common';
+import { CarsModule } from './cars/cars.module';
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+@Module({
+  imports: [CarsModule],
+  controllers: [],
+  providers: [],
+  exports: [],
+})
+export class AppModule {}
 ```
 
-## Test
+`cars.controller.ts`
 
-```bash
-# unit tests
-$ npm run test
+```ts
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { CarsService } from './cars.service';
+import { CreateCarDto } from './dto/create-car.dto';
+import { UpdateCarDto } from './dto/update-car.dto';
 
-# e2e tests
-$ npm run test:e2e
+@Controller('cars')
+export class CarsController {
+  constructor(private readonly carsService: CarsService) {}
 
-# test coverage
-$ npm run test:cov
+  @Get()
+  getAllCars() {
+    return this.carsService.findAll();
+  }
+
+  @Get(':id')
+  getCarById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.carsService.findOneById(id);
+  }
+
+  @Post()
+  createCar(@Body() createCardDto: CreateCarDto) {
+    return this.carsService.create(createCardDto);
+  }
+
+  @Patch(':id')
+  updateCar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateCarDto: UpdateCarDto,
+  ) {
+    return this.carsService.update(id, updateCarDto);
+  }
+
+  @Delete(':id')
+  deleteCar(@Param('id', ParseUUIDPipe) id: string) {
+    return this.carsService.delete(id);
+  }
+}
 ```
 
-## Support
+`cars.service.ts`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```ts
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
 
-## Stay in touch
+import { CreateCarDto, UpdateCarDto } from './dto';
+import { Car } from './interfaces/car.interface';
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+@Injectable()
+export class CarsService {
+  private cars: Car[] = [
+    {
+      id: uuid(),
+      brand: 'Toyota',
+      model: 'Corolla',
+    },
+    {
+      id: uuid(),
+      brand: 'Honda',
+      model: 'Civic',
+    },
+    {
+      id: uuid(),
+      brand: 'Jeep',
+      model: 'Cherokee',
+    },
+  ];
 
-## License
+  findAll() {
+    return this.cars;
+  }
 
-Nest is [MIT licensed](LICENSE).
+  findOneById(id: string) {
+    const car = this.cars.find((car) => car.id === id);
+    if (!car) throw new NotFoundException(`Car with id '${id}' not found`);
+
+    return car;
+  }
+
+  create(createCarDto: CreateCarDto) {
+    const car: Car = {
+      id: uuid(),
+      ...createCarDto,
+    };
+
+    this.cars.push(car);
+
+    return car;
+  }
+
+  update(id: string, updateCarDto: UpdateCarDto) {
+    let carDB = this.findOneById(id);
+
+    if (updateCarDto.id && updateCarDto.id !== id)
+      throw new BadRequestException(`Car id is not valid inside body`);
+
+    this.cars = this.cars.map((car) => {
+      if (car.id === id) {
+        carDB = { ...carDB, ...updateCarDto, id };
+        return carDB;
+      }
+
+      return car;
+    });
+
+    return carDB;
+  }
+
+  delete(id: string) {
+    const car = this.findOneById(id);
+    this.cars = this.cars.filter((car) => car.id !== id);
+  }
+}
+```
+
+`car.interface.ts`
+
+```ts
+export interface Car {
+  id: string;
+  brand: string;
+  model: string;
+}
+```
+
+`create-car.dto.ts`
+
+```ts
+import { IsString } from 'class-validator';
+
+export class CreateCarDto {
+  @IsString()
+  readonly brand: string;
+
+  @IsString()
+  readonly model: string;
+}
+```
+
+`update-car.dto.ts`
+
+```ts
+import { IsOptional, IsString, IsUUID } from 'class-validator';
+
+export class UpdateCarDto {
+  @IsString()
+  @IsUUID()
+  @IsOptional()
+  readonly id?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly brand?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly model?: string;
+}
+```

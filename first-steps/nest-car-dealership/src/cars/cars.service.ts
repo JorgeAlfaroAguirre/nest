@@ -15,16 +15,19 @@ export class CarsService {
       id: uuid(),
       brand: 'Toyota',
       model: 'Corolla',
+      sku: 1,
     },
     {
       id: uuid(),
       brand: 'Honda',
       model: 'Civic',
+      sku: 2,
     },
     {
       id: uuid(),
       brand: 'Jeep',
       model: 'Cherokee',
+      sku: 3,
     },
   ];
 
@@ -64,7 +67,7 @@ export class CarsService {
 
       return car;
     });
-
+    console.log(carDB);
     return carDB;
   }
 
