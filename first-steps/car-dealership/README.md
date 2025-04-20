@@ -1,98 +1,372 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJs
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Structure
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+`src`
 
-## Description
+### app.controller.spec.ts
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The unit tests for the controller.
 
-## Project setup
+```ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
-```bash
-$ yarn install
+describe('AppController', () => {
+  let appController: AppController;
+
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+
+    appController = app.get<AppController>(AppController);
+  });
+
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+});
 ```
 
-## Compile and run the project
+### app.controller.ts
 
-```bash
-# development
-$ yarn run start
+A basic controller with a single route.
 
-# watch mode
-$ yarn run start:dev
+```ts
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
 
-# production mode
-$ yarn run start:prod
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
 ```
 
-## Run tests
+### app.module.ts
 
-```bash
-# unit tests
-$ yarn run test
+The root module of the application.
 
-# e2e tests
-$ yarn run test:e2e
+```ts
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
-# test coverage
-$ yarn run test:cov
+@Module({
+  imports: [],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
 ```
 
-## Deployment
+### app.service.ts
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+A basic service with a single method.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```ts
+import { Injectable } from '@nestjs/common';
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### main.ts
 
-## Resources
+The entry file of the application which uses the core function NestFactory to create a Nest application instance.
 
-Check out a few resources that may come in handy when working with NestJS:
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+async function bootstrap() {
+  // Creates an application instance using the root AppModule
+  const app = await NestFactory.create(AppModule);
 
-## Support
+  // Starts listening for incoming HTTP requests on the specified port
+  // If no PORT is set in the environment, it defaults to 3000
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## A quick change just to see how it works:
 
-## Stay in touch
+### app.service.ts
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```ts
+import { Injectable } from '@nestjs/common';
 
-## License
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+  postName(name: string): string {
+    return `Hello ${name}!`;
+  }
+}
+```
+
+### app.controller.ts
+
+```ts
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+
+  @Post()
+  postName(@Body('name') name: string): string {
+    return this.appService.postName(name);
+  }
+}
+```
+
+## eslint.config.mjs
+
+```mjs
+// @ts-check
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      // Disables the restriction against using the 'any' type explicitly.
+      // Example: function process(input: any) {} is allowed.
+      // Turning this off may reduce type safety but allows flexibility during development.
+      '@typescript-eslint/no-explicit-any': 'off',
+      // Warns when a Promise is used without proper handling (e.g., missing 'await' or '.then/.catch').
+      // Helps prevent unexpected behavior caused by unhandled async operations.
+      '@typescript-eslint/no-floating-promises': 'warn',
+      // Warns when a value with an unknown or unsafe type (like 'any') is passed to a function expecting a safer type.
+      // Useful for catching type mismatches and preserving type integrity across function calls.
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+    },
+  },
+);
+```
+
+I added this ones:
+
+```mjs
+    rules: {
+      // Warns when the 'any' type is used explicitly — helps enforce stronger typing
+      '@typescript-eslint/no-explicit-any': 'warn',
+
+      // Warns when Promises are used without being awaited or properly handled (e.g., with .catch)
+      '@typescript-eslint/no-floating-promises': 'warn',
+
+      // Warns when a value of unknown or unsafe type is passed as an argument — improves type safety
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+
+      // Warns when a function is declared without explicitly specifying a return type
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+
+      // Warns when declared variables are not used anywhere in the code
+      '@typescript-eslint/no-unused-vars': 'warn',
+
+      // Warns when Promises are used incorrectly, such as in conditional expressions or without proper await
+      '@typescript-eslint/no-misused-promises': 'warn',
+
+      // Warns when you don’t use `import type` for importing only types — improves clarity and avoids potential issues in compilation
+      '@typescript-eslint/consistent-type-imports': 'warn',
+
+      // Warns when using TypeScript directive comments like `@ts-ignore` or `@ts-expect-error`
+      // Helps prevent hiding type errors without good reason
+      '@typescript-eslint/ban-ts-comment': 'warn',
+    },
+```
+
+## Start
+
+### Delete Controllers, Services and let the module like this:.
+
+```ts
+import { Module } from '@nestjs/common';
+import { CarsModule } from './cars/cars.module';
+
+@Module({
+  imports: [],
+  controllers: [],
+  providers: [],
+  exports: [],
+})
+export class AppModule {}
+```
+
+### Then create a new controller
+
+`nest g mo cars`
+
+| Part              | Meaning                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `nest`            | Calls the NestJS CLI                                                     |
+| `g` or `generate` | Command to generate code (you can use `g` as a shorthand)                |
+| `mo` or `module`  | Specifies the type of file to generate (in this case, a module)          |
+| `cars`            | Name of the module to create (usually plural if it represents a feature) |
+
+this modifies your module like this:
+
+```ts
+import { Module } from '@nestjs/common';
+import { CarsModule } from './cars/cars.module';
+
+@Module({
+  imports: [CarsModule],
+  controllers: [],
+  providers: [],
+  exports: [],
+})
+export class AppModule {}
+```
+
+crea la carpeta cars y luego el cars.module.ts
+
+```ts
+import { Module } from '@nestjs/common';
+
+@Module({})
+export class CarsModule {}
+```
+
+y nos da este mensaje en la terminal
+
+`CREATE src/cars/cars.module.ts (85 bytes)`
+`UPDATE src/app.module.ts (215 bytes)`
+
+Ahora creo el controlador
+
+`nest g co cars`
+
+`CREATE src/cars/cars.controller.ts (101 bytes)
+CREATE src/cars/cars.controller.spec.ts (496 bytes)
+UPDATE src/cars/cars.module.ts (170 bytes)`
+
+`cars.controller.ts`
+
+```ts
+import { Controller } from '@nestjs/common';
+
+@Controller('cars')
+export class CarsController {}
+```
+
+`cars.module.ts`
+
+```ts
+import { Module } from '@nestjs/common';
+import { CarsController } from './cars.controller';
+
+@Module({
+  controllers: [CarsController],
+})
+export class CarsModule {}
+```
+
+`cars.controller.spec.ts`
+
+```ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { CarsController } from './cars.controller';
+
+describe('CarsController', () => {
+  let controller: CarsController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [CarsController],
+    }).compile();
+
+    controller = module.get<CarsController>(CarsController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+```
+
+cambios esto
+
+```ts
+import { Controller, Get } from '@nestjs/common';
+
+@Controller('cars')
+export class CarsController {
+  @Get()
+  getAllCars() {
+    return ['Toyota', 'Honda', 'Jeep'];
+  }
+}
+```
+
+Y bam tenemos esta ruta
+
+http://localhost:3000/cars
+
+que nos entrega esto
+
+```json
+["Toyota", "Honda", "Jeep"]
+```
+
+`nest g s cars --no-spec`
+
+`CREATE src/cars/cars.service.ts (92 bytes)`
+`UPDATE src/cars/cars.module.ts (244 bytes)`
+
+```ts
+import { Module } from '@nestjs/common';
+import { CarsController } from './cars.controller';
+import { CarsService } from './cars.service';
+
+@Module({
+  controllers: [CarsController],
+  providers: [CarsService],
+})
+export class CarsModule {}
+```
